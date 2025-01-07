@@ -23,6 +23,9 @@ cap-std = { workspace = true }
 cap-rand = { workspace = true }
 bitflags = { workspace = true }
 log = { workspace = true }
+bls-permissions = { workspace = true }
+termcolor = { workspace = true }
+once_cell = { workspace = true }
 
 # Optional, enabled by wasmtime feature:
 wasmtime = { workspace = true, optional = true, features = ['runtime'] }
