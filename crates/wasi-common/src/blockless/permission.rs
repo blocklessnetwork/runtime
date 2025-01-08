@@ -29,9 +29,9 @@ impl Permission {
 }
 
 #[derive(Clone, Debug)]
-pub struct PermissionsContainer(pub bls_permissions::BlsPermissionsContainer);
+pub struct BlsRuntimePermissionsContainer(pub bls_permissions::BlsPermissionsContainer);
 
-impl PermissionsContainer {
+impl BlsRuntimePermissionsContainer {
     pub fn new(descriptor_parser: Arc<dyn PermissionDescriptorParser>, perms: BlsPermissions) -> Self {
         init_tty_prompter();
         Self(BlsPermissionsContainer::new(descriptor_parser, perms))
@@ -40,8 +40,8 @@ impl PermissionsContainer {
     pub fn create_child_permissions(
         &self,
         child_permissions_arg: ChildPermissionsArg,
-    ) -> Result<PermissionsContainer, AnyError> {
-        Ok(PermissionsContainer(self.0.create_child_permissions(child_permissions_arg)?))
+    ) -> Result<BlsRuntimePermissionsContainer, AnyError> {
+        Ok(BlsRuntimePermissionsContainer(self.0.create_child_permissions(child_permissions_arg)?))
     }
 
     pub fn allow_all(descriptor_parser: Arc<dyn PermissionDescriptorParser>) -> Self {
