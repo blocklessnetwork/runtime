@@ -23,7 +23,7 @@ pub struct WasiCtxBuilder {
 impl WasiCtxBuilder {
     pub fn new() -> Self {
         WasiCtxBuilder {
-            ctx: WasiCtx::new(random_ctx(), clocks_ctx(), sched_ctx(), Table::new()),
+            ctx: WasiCtx::new(random_ctx(), clocks_ctx(), sched_ctx(), Table::new(), None),
             built: false,
         }
     }

@@ -22,7 +22,7 @@ pub struct EnvCurrentDir {
 }
 
 #[derive(Debug)]
-struct RuntimePermissionDescriptorParser {
+pub struct RuntimePermissionDescriptorParser {
     current_dir: EnvCurrentDir,
 }
 

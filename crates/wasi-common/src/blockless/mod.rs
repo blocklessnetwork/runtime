@@ -8,3 +8,4 @@ pub use config::*;
 pub use permissions::*;
 pub use prompter::*;
 pub use error::*;
+pub use permission_parser::*;

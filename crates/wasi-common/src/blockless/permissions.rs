@@ -15,6 +15,8 @@ use bls_permissions::RunQueryDescriptor;
 use bls_permissions::Url;
 
 use super::init_tty_prompter;
+use super::EnvCurrentDir;
+use super::RuntimePermissionDescriptorParser;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Permission {
@@ -34,6 +36,7 @@ pub struct BlsRuntimePermissionsContainer(
 );
 
 impl BlsRuntimePermissionsContainer {
+
     pub fn new(
         descriptor_parser: Arc<dyn PermissionDescriptorParser>, 
         perms: BlsPermissions
@@ -41,6 +44,17 @@ impl BlsRuntimePermissionsContainer {
         init_tty_prompter();
         Self(
             BlsPermissionsContainer::new(descriptor_parser, perms)
+        )
+    }
+
+    pub fn new_with_env_cwd(cwd: Option<&str>) -> Self {
+        Self::new(
+            Arc::new(RuntimePermissionDescriptorParser::new(
+                EnvCurrentDir {
+                    current_dir: cwd.map(String::from).or(Some("/".into())),
+                }
+            )),
+            BlsPermissions::allow_all()
         )
     }
 
