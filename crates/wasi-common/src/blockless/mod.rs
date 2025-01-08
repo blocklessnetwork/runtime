@@ -1,7 +1,10 @@
 mod config;
-mod permission;
+mod permissions;
 mod prompter;
 mod colors;
+mod error;
+mod permission_parser;
 pub use config::*;
-pub use permission::*;
+pub use permissions::*;
 pub use prompter::*;
+pub use error::*;
