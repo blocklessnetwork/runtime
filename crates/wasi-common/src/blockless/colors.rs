@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use once_cell::sync::Lazy;
 use std::fmt;
 use std::fmt::Write as _;
@@ -21,7 +22,7 @@ use termcolor::BufferWriter;
 use termcolor::ColorChoice;
 
 static USE_COLOR: Lazy<AtomicBool> = Lazy::new(|| {
-  #[cfg(wasm)]
+  #[cfg(target_family="wasm")]
   {
     // Don't use color by default on Wasm targets because
     // it's not always possible to read the `NO_COLOR` env var.
@@ -29,7 +30,7 @@ static USE_COLOR: Lazy<AtomicBool> = Lazy::new(|| {
     // Instead the user can opt-in via `set_use_color`.
     AtomicBool::new(false)
   }
-  #[cfg(not(wasm))]
+  #[cfg(not(target_family="wasm"))]
   {
     let no_color = std::env::var_os("NO_COLOR")
       .map(|v| !v.is_empty())
@@ -47,13 +48,13 @@ pub enum ColorLevel {
 }
 
 static COLOR_LEVEL: Lazy<ColorLevel> = Lazy::new(|| {
-  #[cfg(wasm)]
+  #[cfg(target_family="wasm")]
   {
     // Don't use color by default on Wasm targets because
     // it's not always possible to read env vars.
     ColorLevel::None
   }
-  #[cfg(not(wasm))]
+  #[cfg(not(target_family="wasm"))]
   {
     let no_color = std::env::var_os("NO_COLOR")
       .map(|v| !v.is_empty())
@@ -74,12 +75,8 @@ static COLOR_LEVEL: Lazy<ColorLevel> = Lazy::new(|| {
       }
     }
 
-    #[cfg(platform = "windows")]
+    #[cfg(target_os = "windows")]
     {
-      // TODO: Older versions of windows only support ansi colors,
-      // starting with Windows 10 build 10586 ansi256 is supported
-
-      // TrueColor support landed with Windows 10 build 14931,
       // see https://devblogs.microsoft.com/commandline/24-bit-color-in-the-windows-console/
       return ColorLevel::TrueColor;
     }
