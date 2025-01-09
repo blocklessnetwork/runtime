@@ -8,6 +8,8 @@ use std::{
 };
 use wasmtime::OptLevel;
 
+use super::set_is_inherit_stdin;
+
 const ENTRY: &str = "_start";
 
 #[derive(Clone, Debug)]
@@ -426,15 +428,37 @@ bls_options! {
 
 #[derive(Clone)]
 pub struct Stdio {
-    pub stdin: Stdin,
-    pub stdout: Stdout,
-    pub stderr: Stderr,
+    pub(crate) stdin: Stdin,
+    pub(crate) stdout: Stdout,
+    pub(crate) stderr: Stderr,
+}
+
+impl Stdio {
+    #[inline(always)]
+    pub fn stdin(&mut self, stdin: Stdin) {
+        let is_inherit_stdin = match stdin {
+            Stdin::Fixed(_) => false,
+            _ => true,
+        };
+        set_is_inherit_stdin(is_inherit_stdin);
+        self.stdin = stdin;
+    }
+
+    #[inline(always)]
+    pub fn stdout(&mut self, stdout: Stdout) {
+        self.stdout = stdout;
+    }
+
+    #[inline(always)]
+    pub fn stderr(&mut self, stderr: Stderr) {
+        self.stderr = stderr;
+    }
 }
 
 impl Default for Stdio {
     fn default() -> Self {
         Stdio {
-            stdin: Stdin::Fixed(String::new()),
+            stdin: Stdin::Inherit,
             stdout: Stdout::Inherit,
             stderr: Stderr::Inherit,
         }

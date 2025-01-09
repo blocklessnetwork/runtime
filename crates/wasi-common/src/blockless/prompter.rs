@@ -7,6 +7,8 @@ use std::io::IsTerminal;
 use std::io::StderrLock;
 use std::io::StdinLock;
 use std::io::Write as IoWrite;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
 use std::sync::Once;
 use anyhow::bail;
 use anyhow::Error as AnyError;
@@ -38,11 +40,17 @@ fn escape_control_characters(s: &str) -> std::borrow::Cow<str> {
     output.into()
 }
 
+static IS_INHERIT_STDIN: AtomicBool = AtomicBool::new(true);
+
 pub fn init_tty_prompter() {
     static TTYPROMPTER: Once = Once::new();
     TTYPROMPTER.call_once(|| {
         set_prompter(Box::new(TtyPrompter));
     });
+}
+
+pub fn set_is_inherit_stdin(b: bool) {
+    IS_INHERIT_STDIN.store(b, Ordering::SeqCst);
 }
 
 pub fn set_prompt_callbacks(before_callback: PromptCallback, after_callback: PromptCallback) {
@@ -238,6 +246,11 @@ impl PermissionPrompter for TtyPrompter {
             eprintln!("❌ WARNING: This may indicate that code is trying to bypass or hide permission check requests.");
             eprintln!("❌ Run again with --allow-{name} to bypass this check if this is really what you want to do.");
             return PromptResponse::Deny;
+        }
+
+        let is_inhert_stdin = IS_INHERIT_STDIN.load(Ordering::Acquire);
+        if !is_inhert_stdin {
+            panic!("stdin is not inherited");
         }
 
         #[cfg(unix)]

@@ -341,13 +341,13 @@ impl CliCommandOpts {
 
         // Handle IO settings
         if let Some(stderr) = self.stderr {
-            conf.0.stdio.stderr = stderr;
+            conf.0.stdio.stderr(stderr);
         }
         if let Some(stdout) = self.stdout {
-            conf.0.stdio.stdout = stdout;
+            conf.0.stdio.stdout(stdout);
         }
         if let Some(stdin) = self.stdin {
-            conf.0.stdio.stdin = stdin;
+            conf.0.stdio.stdin(stdin);
         }
         if self.permissions.len() > 0 {
             conf.0.set_permisions(self.permissions);
