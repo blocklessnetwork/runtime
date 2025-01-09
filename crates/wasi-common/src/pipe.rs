@@ -27,7 +27,7 @@ use std::sync::{Arc, RwLock};
 /// let clocks = todo!();
 /// let sched = todo!();
 /// let table = Table::new();
-/// let mut ctx = WasiCtx::new(random, clocks, sched, table);
+/// let mut ctx = WasiCtx::new(random, clocks, sched, table, None);
 /// ctx.set_stdin(Box::new(stdin.clone()));
 /// ```
 #[derive(Debug)]
@@ -123,7 +123,7 @@ impl<R: Read + Any + Send + Sync> WasiFile for ReadPipe<R> {
 /// let clocks = todo!();
 /// let sched = todo!();
 /// let table = Table::new();
-/// let mut ctx = WasiCtx::new(random, clocks, sched, table);
+/// let mut ctx = WasiCtx::new(random, clocks, sched, table, None);
 /// ctx.set_stdout(Box::new(stdout.clone()));
 /// // use ctx in an instance, then make sure it is dropped:
 /// drop(ctx);
