@@ -54,7 +54,7 @@ impl BlsRuntimePermissionsContainer {
                     current_dir: cwd.map(String::from).or(Some("/".into())),
                 }
             )),
-            BlsPermissions::allow_all()
+            BlsPermissions::none_with_prompt()
         )
     }
 
