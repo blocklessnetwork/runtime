@@ -11,7 +11,7 @@ use crate::{
     I32Exit, SystemTimeSpec, WasiCtx,
 };
 use cap_std::time::{Duration, SystemClock};
-use std::borrow::Cow;
+use std::{borrow::Cow, path::PathBuf};
 use std::io::{IoSlice, IoSliceMut};
 use std::ops::Deref;
 use std::sync::Arc;
@@ -684,6 +684,7 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         dirfd: types::Fd,
         path: GuestPtr<str>,
     ) -> Result<(), Error> {
+        println!("{dirfd}");
         self.table()
             .get_dir(u32::from(dirfd))?
             .dir
@@ -778,6 +779,7 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         _fs_rights_inheriting: types::Rights,
         fdflags: types::Fdflags,
     ) -> Result<types::Fd, Error> {
+        
         let table = self.table();
         let dirfd = u32::from(dirfd);
         if table.is::<FileEntry>(dirfd) {
@@ -790,7 +792,10 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         let oflags = OFlags::from(&oflags);
         let fdflags = FdFlags::from(fdflags);
         let path = memory.as_cow_str(path)?;
-
+        let path_buf: PathBuf = PathBuf::from(path.as_ref());
+        self.perms_container
+            .check_read_path(&path_buf, Some("path open"))
+            .map_err(|_| Error::perm())?;
         let read = fs_rights_base.contains(types::Rights::FD_READ);
         let write = fs_rights_base.contains(types::Rights::FD_WRITE);
         let access_mode = if read {
@@ -802,7 +807,6 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         } else {
             FileAccessMode::empty()
         };
-
         let file = dir_entry
             .dir
             .open_file(symlink_follow, path.deref(), oflags, read, write, fdflags)

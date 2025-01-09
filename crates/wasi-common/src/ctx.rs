@@ -29,7 +29,7 @@ pub struct WasiCtxInner {
     pub clocks: WasiClocks,
     pub sched: Box<dyn WasiSched>,
     pub table: Table,
-    pub permissions_container: BlsRuntimePermissionsContainer,
+    pub perms_container: BlsRuntimePermissionsContainer,
     pub blockless_config: Mutex<Option<BlocklessConfig>>,
 }
 
@@ -46,7 +46,7 @@ impl WasiCtx {
             env: StringArray::new(),
             random: Mutex::new(random),
             blockless_config: Mutex::new(None),
-            permissions_container: BlsRuntimePermissionsContainer::new_with_env_cwd(cwd),
+            perms_container: BlsRuntimePermissionsContainer::new_with_env_cwd(cwd),
             clocks,
             sched,
             table,

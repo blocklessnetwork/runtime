@@ -227,10 +227,11 @@ impl PermissionPrompter for TtyPrompter {
         api_name: Option<&str>,
         is_unary: bool,
     ) -> PromptResponse {
+        
         if !std::io::stdin().is_terminal() || !std::io::stderr().is_terminal() {
             return PromptResponse::Deny;
         };
-
+        
         #[allow(clippy::print_stderr)]
         if message.len() > MAX_PERMISSION_PROMPT_LENGTH {
             eprintln!("❌ Permission prompt length ({} bytes) was larger than the configured maximum length ({} bytes): denying request.", message.len(), MAX_PERMISSION_PROMPT_LENGTH);
@@ -241,13 +242,13 @@ impl PermissionPrompter for TtyPrompter {
 
         #[cfg(unix)]
         let metadata_before = get_stdin_metadata().unwrap();
-
+        
         // Lock stdio streams, so no other output is written while the prompt is
         // displayed.
         let stdout_lock = std::io::stdout().lock();
         let mut stderr_lock = std::io::stderr().lock();
         let mut stdin_lock = std::io::stdin().lock();
-
+        
         // For security reasons we must consume everything in stdin so that previously
         // buffered data cannot affect the prompt.
         #[allow(clippy::print_stderr)]
@@ -266,7 +267,7 @@ impl PermissionPrompter for TtyPrompter {
         } else {
             "[y/n] (y = yes, allow; n = no, deny)".to_string()
         };
-
+        
         // output everything in one shot to make the tests more reliable
         {
             let mut output = String::new();
@@ -295,8 +296,9 @@ impl PermissionPrompter for TtyPrompter {
             writeln!(&mut output, "┠─ {}", colors::italic(&msg)).unwrap();
             write!(&mut output, "┗ {}", colors::bold("Allow?")).unwrap();
             write!(&mut output, " {opts} > ").unwrap();
-
+            
             stderr_lock.write_all(output.as_bytes()).unwrap();
+            stderr_lock.flush().unwrap();
         }
 
         let value = loop {
