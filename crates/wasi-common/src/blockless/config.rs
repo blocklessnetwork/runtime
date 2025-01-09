@@ -428,9 +428,9 @@ bls_options! {
 
 #[derive(Clone)]
 pub struct Stdio {
-    pub(crate) stdin: Stdin,
-    pub(crate) stdout: Stdout,
-    pub(crate) stderr: Stderr,
+    pub stdin: Stdin,
+    pub stdout: Stdout,
+    pub stderr: Stderr,
 }
 
 impl Stdio {
