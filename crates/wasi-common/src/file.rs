@@ -227,6 +227,7 @@ impl TableFileExt for crate::table::Table {
 pub struct FileEntry {
     pub file: Box<dyn WasiFile>,
     pub access_mode: FileAccessMode,
+    pub name: Option<String>,
 }
 
 bitflags! {
@@ -239,7 +240,11 @@ bitflags! {
 
 impl FileEntry {
     pub fn new(file: Box<dyn WasiFile>, access_mode: FileAccessMode) -> Self {
-        FileEntry { file, access_mode }
+        FileEntry { file, access_mode, name: None }
+    }
+
+    pub fn set_name(&mut self, name: Option<String>) {
+        self.name = name;
     }
 
     pub async fn get_fdstat(&self) -> Result<FdStat, Error> {

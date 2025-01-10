@@ -330,6 +330,11 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         iovs: types::IovecArray,
     ) -> Result<types::Size, Error> {
         let f = self.table().get_file(u32::from(fd))?;
+        if let Some(name) = f.name.as_ref() {
+            self.perms_container
+                .check_read(&name, "fd_read")
+                .map_err(|_| Error::perm())?;
+        }
         // Access mode check normalizes error returned (windows would prefer ACCES here)
         if !f.access_mode.contains(FileAccessMode::READ) {
             Err(types::Errno::Badf)?
@@ -401,6 +406,11 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         offset: types::Filesize,
     ) -> Result<types::Size, Error> {
         let f = self.table().get_file(u32::from(fd))?;
+        if let Some(name) = f.name.as_ref() {
+            self.perms_container
+                .check_read(&name, "fd_pread")
+                .map_err(|_| Error::perm())?;
+        }
         // Access mode check normalizes error returned (windows would prefer ACCES here)
         if !f.access_mode.contains(FileAccessMode::READ) {
             Err(types::Errno::Badf)?
@@ -469,6 +479,11 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         ciovs: types::CiovecArray,
     ) -> Result<types::Size, Error> {
         let f = self.table().get_file(u32::from(fd))?;
+        if let Some(name) = f.name.as_ref() {
+            self.perms_container
+                .check_write(&name, "fd_write")
+                .map_err(|_| Error::perm())?;
+        }
         // Access mode check normalizes error returned (windows would prefer ACCES here)
         if !f.access_mode.contains(FileAccessMode::WRITE) {
             Err(types::Errno::Badf)?
@@ -501,6 +516,11 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         offset: types::Filesize,
     ) -> Result<types::Size, Error> {
         let f = self.table().get_file(u32::from(fd))?;
+        if let Some(name) = f.name.as_ref() {
+            self.perms_container
+                .check_write(&name, "fd_pwrite")
+                .map_err(|_| Error::perm())?;
+        }
         // Access mode check normalizes error returned (windows would prefer ACCES here)
         if !f.access_mode.contains(FileAccessMode::WRITE) {
             Err(types::Errno::Badf)?
@@ -684,7 +704,6 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         dirfd: types::Fd,
         path: GuestPtr<str>,
     ) -> Result<(), Error> {
-        println!("{dirfd}");
         self.table()
             .get_dir(u32::from(dirfd))?
             .dir
@@ -799,9 +818,10 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         });
         if let Some(ref full_path) = full_path {
             self.perms_container
-                .check_read_path(full_path, Some("path open"))
+                .check_read_path(full_path, Some("path_open"))
                 .map_err(|_| Error::perm())?;
         }
+        
         
         let read = fs_rights_base.contains(types::Rights::FD_READ);
         let write = fs_rights_base.contains(types::Rights::FD_WRITE);
@@ -821,7 +841,11 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         drop(dir_entry);
 
         let fd = match file {
-            OpenResult::File(file) => table.push(Arc::new(FileEntry::new(file, access_mode)))?,
+            OpenResult::File(file) => {
+                let mut file_entry = FileEntry::new(file, access_mode);
+                file_entry.set_name(full_path.map(|p| p.to_string_lossy().to_string()));
+                table.push(Arc::new(file_entry))?
+            },
             OpenResult::Dir(child_dir) => table.push(Arc::new(DirEntry::new(None, child_dir)))?,
         };
         Ok(types::Fd::from(fd))
