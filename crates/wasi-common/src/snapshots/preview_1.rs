@@ -11,7 +11,7 @@ use crate::{
     I32Exit, SystemTimeSpec, WasiCtx,
 };
 use cap_std::time::{Duration, SystemClock};
-use std::{borrow::Cow, path::PathBuf};
+use std::{borrow::Cow, path::PathBuf, str::FromStr};
 use std::io::{IoSlice, IoSliceMut};
 use std::ops::Deref;
 use std::sync::Arc;
@@ -261,10 +261,22 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         let table = self.table();
         let fd = u32::from(fd);
         if table.is::<FileEntry>(fd) {
-            let filestat = table.get_file(fd)?.file.get_filestat().await?;
+            let file_entry = table.get_file(fd)?;
+            if let Some(name) = file_entry.name.as_ref() {
+                self.perms_container
+                    .check_read(name, "fd_filestat_get")
+                    .map_err(|_| Error::perm())?;
+            }
+            let filestat = file_entry.file.get_filestat().await?;
             Ok(filestat.into())
         } else if table.is::<DirEntry>(fd) {
-            let filestat = table.get_dir(fd)?.dir.get_filestat().await?;
+            let dir_entry = table.get_dir(fd)?;
+            if let Some(name) = dir_entry.preopen_path() {
+                self.perms_container
+                    .check_read(&name.to_string_lossy(), "fd_filestat_get")
+                    .map_err(|_| Error::perm())?;
+            }
+            let filestat = dir_entry.dir.get_filestat().await?;
             Ok(filestat.into())
         } else {
             Err(Error::badf())
@@ -718,9 +730,20 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         flags: types::Lookupflags,
         path: GuestPtr<str>,
     ) -> Result<types::Filestat, Error> {
-        let filestat = self
+        let dir_entry = self
             .table()
-            .get_dir(u32::from(dirfd))?
+            .get_dir(u32::from(dirfd))?;
+        let filen = memory.as_cow_str(path)?;
+        if let Some(dir) = dir_entry.preopen_path() {
+            let full_path = dir.join(
+                PathBuf::from_str(&filen)
+                    .map_err(|_| Error::invalid_argument())?
+            );
+            self.perms_container
+                .check_read(&full_path.to_string_lossy(), "path_filestat_get")
+                .map_err(|_| Error::perm())?;
+        }
+        let filestat = dir_entry
             .dir
             .get_path_filestat(
                 memory.as_cow_str(path)?.deref(),
@@ -818,7 +841,7 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         });
         if let Some(ref full_path) = full_path {
             self.perms_container
-                .check_read_path(full_path, Some("path_open"))
+                .check_read(&full_path.to_string_lossy(), "path_open")
                 .map_err(|_| Error::perm())?;
         }
         
