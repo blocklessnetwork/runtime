@@ -792,10 +792,17 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         let oflags = OFlags::from(&oflags);
         let fdflags = FdFlags::from(fdflags);
         let path = memory.as_cow_str(path)?;
-        let path_buf: PathBuf = PathBuf::from(path.as_ref());
-        self.perms_container
-            .check_read_path(&path_buf, Some("path open"))
-            .map_err(|_| Error::perm())?;
+
+        //permission check.
+        let full_path = dir_entry.preopen_path().as_ref().map(|dir| {
+            PathBuf::from(dir.join(path.as_ref()))
+        });
+        if let Some(ref full_path) = full_path {
+            self.perms_container
+                .check_read_path(full_path, Some("path open"))
+                .map_err(|_| Error::perm())?;
+        }
+        
         let read = fs_rights_base.contains(types::Rights::FD_READ);
         let write = fs_rights_base.contains(types::Rights::FD_WRITE);
         let access_mode = if read {
