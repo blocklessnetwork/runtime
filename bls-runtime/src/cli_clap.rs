@@ -1,19 +1,18 @@
 #![allow(unused)]
 use anyhow::{bail, Result};
 use blockless::{
-    BlocklessConfig, BlocklessModule, BlsNnGraph, BlsOptions, ModuleType, OptimizeOpts, Permission,
-    Stderr, Stdin, Stdout,
+    BlocklessConfig, BlocklessModule, BlsNnGraph, BlsOptions, ModuleType, OptimizeOpts, OptionParser, Permission, PermissionAllow, Stderr, Stdin, Stdout
 };
 use clap::{
     builder::{TypedValueParser, ValueParser},
     Arg, ArgMatches, Command, Parser,
 };
 use std::{
-    collections::HashMap,
-    net::{IpAddr, SocketAddr, TcpListener, ToSocketAddrs},
-    option,
-    path::{Path, PathBuf},
-    str::FromStr,
+    collections::HashMap, 
+    net::{
+        IpAddr, SocketAddr, TcpListener, ToSocketAddrs
+    }, 
+    option, path::{Path, PathBuf}, str::FromStr
 };
 use url::Url;
 
@@ -86,6 +85,10 @@ const NN_GRAPH_HELP: &str =
     "Pre-load machine learning graphs (i.e., models) for use by wasi-nn.  \
 Each use of the flag will preload a ML model from the host directory using the given model encoding";
 
+const ALLOW_READ_HELP: &str = "Allow the app to read permissions.";
+
+const ALLOW_WRITE_HELP: &str = "Allow the app to write permissions.";
+
 fn parse_envs(envs: &str) -> Result<(String, String)> {
     let parts: Vec<_> = envs.splitn(2, "=").collect();
     if parts.len() != 2 {
@@ -149,6 +152,10 @@ fn parse_permission(permsion: &str) -> Result<Permission> {
     })
 }
 
+fn parser_allow(allow: &str) -> Result<PermissionAllow> {
+    PermissionAllow::parse(&allow)
+}
+
 fn parse_module(module: &str) -> Result<BlocklessModule> {
     let mods: Vec<_> = module.splitn(2, "=").collect();
     Ok(BlocklessModule {
@@ -209,6 +216,18 @@ fn parse_dirs(s: &str) -> Result<(String, String)> {
 pub enum RuntimeType {
     V86,
     Wasm,
+}
+
+#[derive(Parser, Debug)]
+struct PermissionFlags {
+    #[clap(long = "read-allow", num_args=(0..), short = 'R', value_name = "[FILE[,]]", help = ALLOW_READ_HELP, value_parser = parser_allow)]
+    allow_read: Option<PermissionAllow>,
+
+    #[clap(long = "write-allow", num_args=(0..) , value_name = "[FILE[,]]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
+    allow_write: Option<PermissionAllow>,
+
+    #[clap(long = "allow-all", help = "Allow all permissions.")]
+    allow_all: Option<bool>,
 }
 
 /// The latest version from Cargo.toml
@@ -298,11 +317,17 @@ pub(crate) struct CliCommandOpts {
     #[clap(long = "max_memory_size", value_name = "MAX_MEMORY_SIZE", help = MAX_MEMORY_SIZE_HELP)]
     max_memory_size: Option<u64>,
 
+    #[clap(flatten)]
+    permission_flags: PermissionFlags,
+
     #[clap(long = "nn", value_name = "NN", help = NN_HELP)]
     nn: bool,
 
     #[clap(long = "nn-graph", value_name = "NN_GRAPH", value_parser = parse_nn_graph, help = NN_GRAPH_HELP)]
     nn_graph: Vec<BlsNnGraph>,
+
+    #[arg(long)]
+    pub help: bool,
 }
 
 impl CliCommandOpts {

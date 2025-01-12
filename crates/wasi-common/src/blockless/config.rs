@@ -278,6 +278,30 @@ impl OptionParser<String> for wasmtime::RegallocAlgorithm {
     }
 }
 
+#[derive(Clone, Debug)]
+pub enum PermissionAllow {
+    AllowAll,
+    Allow(Vec<String>),
+}
+
+impl Default for PermissionAllow {
+    fn default() -> Self {
+        PermissionAllow::AllowAll
+    }
+}
+
+impl OptionParser<&str> for PermissionAllow {
+    fn parse(val: &&str) -> anyhow::Result<Self> {
+        match *val {
+            "" => Ok(PermissionAllow::AllowAll),
+            val@_ => {
+                let val = val.split(',').map(String::from).collect::<Vec<_>>();
+                Ok(PermissionAllow::Allow(val))
+            },
+        }
+    }
+}
+
 bls_options! {
     #[derive(PartialEq, Clone)]
     pub struct OptimizeOpts {
@@ -471,6 +495,23 @@ pub struct BlsNnGraph {
     pub dir: String,
 }
 
+#[derive(Clone, Debug)]
+pub struct PermissionConfig {
+    pub allow_read: Option<PermissionAllow>,
+    pub allow_write: Option<PermissionAllow>,
+    pub allow_all: Option<bool>,
+}
+
+impl Default for PermissionConfig {
+    fn default() -> Self {
+        PermissionConfig {
+            allow_read: None,
+            allow_write: None,
+            allow_all: None,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct BlocklessConfig {
     pub entry: String,
@@ -504,6 +545,7 @@ pub struct BlocklessConfig {
     pub cli_exit_with_code: bool,
     pub network_error_code: bool,
     pub group_permisions: HashMap<String, Vec<Permission>>,
+    pub permissions: PermissionConfig,
 }
 
 impl BlocklessConfig {
@@ -542,6 +584,7 @@ impl BlocklessConfig {
             opts: Default::default(),
             runtime_logger_level: LoggerLevel::WARN,
             version: BlocklessConfigVersion::Version0,
+            permissions: Default::default(),
         }
     }
 
