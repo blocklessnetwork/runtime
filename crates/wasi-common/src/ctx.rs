@@ -6,6 +6,7 @@ use crate::string_array::StringArray;
 use crate::table::Table;
 use crate::{BlocklessConfig, BlsRuntimePermissionsContainer};
 use crate::{Error, StringArrayError};
+use bls_permissions::PermissionsOptions;
 use cap_rand::RngCore;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
@@ -79,6 +80,10 @@ impl WasiCtx {
             Some(ref c) => c.resource_permission(resource),
             None => false,
         }
+    }
+
+    pub fn set_permissions_options(&mut self, permissions: PermissionsOptions) -> Result<(), anyhow::Error> {
+        self.perms_container.set_permissions_options(permissions)
     }
 
     pub fn insert_file(&self, fd: u32, file: Box<dyn WasiFile>, access_mode: FileAccessMode) {

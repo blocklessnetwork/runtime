@@ -374,6 +374,8 @@ impl BlocklessRunner {
         match linker {
             BlsLinker::Core(ref mut linker) => {
                 Self::preview1_linker_setup(linker);
+                //preview1 setup the permissions with options
+                store.data_mut().set_permisions(&b_conf.permissions_config);
             }
             BlsLinker::Component(ref mut linker) => {
                 is_component = true;

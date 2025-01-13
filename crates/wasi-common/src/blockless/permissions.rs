@@ -10,7 +10,9 @@ use bls_permissions::ChildPermissionsArg;
 use bls_permissions::ModuleSpecifier;
 use bls_permissions::PermissionDescriptorParser;
 use bls_permissions::PermissionState;
+use bls_permissions::Permissions;
 use bls_permissions::Permissions as BlsPermissions;
+use bls_permissions::PermissionsOptions;
 use bls_permissions::RunQueryDescriptor;
 use bls_permissions::Url;
 
@@ -31,7 +33,7 @@ impl Permission {
 }
 
 #[derive(Clone, Debug)]
-pub struct BlsRuntimePermissionsContainer{
+pub struct BlsRuntimePermissionsContainer {
     pub inner: bls_permissions::BlsPermissionsContainer
 }
 
@@ -42,7 +44,7 @@ impl BlsRuntimePermissionsContainer {
         perms: BlsPermissions
     ) -> Self {
         init_tty_prompter();
-        Self{
+        Self {
             inner: BlsPermissionsContainer::new(descriptor_parser, perms)
         }
     }
@@ -56,6 +58,12 @@ impl BlsRuntimePermissionsContainer {
             )),
             BlsPermissions::none_with_prompt()
         )
+    }
+
+    pub fn set_permissions_options(&self, permission_options: PermissionsOptions) -> Result<(), AnyError> {
+        let permissions = Permissions::from_options(&*self.inner.descriptor_parser, &permission_options)?;
+        *self.inner.lock() = permissions;
+        Ok(())
     }
 
     pub fn allow_all(&self) {

@@ -30,7 +30,7 @@ wasi-common = { path = "crates/wasi-common", version="=28.0.0" }
 # witx dependency by wiggle
 wiggle = "=28.0.0"
 witx = "0.9.1"
-bls-permissions = {git = "https://github.com/blocklessnetwork/bls-permissions.git", tag="v0.0.2"}
+bls-permissions = {git = "https://github.com/blocklessnetwork/bls-permissions.git"}
 termcolor = { version = "1.1.3"}
 
 anyhow = "1.0.93"

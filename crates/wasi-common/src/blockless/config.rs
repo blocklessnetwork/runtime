@@ -1,5 +1,6 @@
 use crate::Permission;
 use anyhow::{bail, Ok};
+use bls_permissions::PermissionsOptions;
 use std::{
     collections::HashMap,
     net::SocketAddr,
@@ -278,18 +279,6 @@ impl OptionParser<String> for wasmtime::RegallocAlgorithm {
     }
 }
 
-#[derive(Clone, Debug)]
-pub enum PermissionAllow {
-    AllowAll,
-    Allow(Vec<String>),
-}
-
-impl Default for PermissionAllow {
-    fn default() -> Self {
-        PermissionAllow::AllowAll
-    }
-}
-
 impl OptionParser<&str> for PermissionAllow {
     fn parse(val: &&str) -> anyhow::Result<Self> {
         match *val {
@@ -496,10 +485,47 @@ pub struct BlsNnGraph {
 }
 
 #[derive(Clone, Debug)]
+pub enum PermissionAllow {
+    AllowAll,
+    Allow(Vec<String>),
+}
+
+impl Default for PermissionAllow {
+    fn default() -> Self {
+        PermissionAllow::AllowAll
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct PermissionConfig {
     pub allow_read: Option<PermissionAllow>,
     pub allow_write: Option<PermissionAllow>,
-    pub allow_all: Option<bool>,
+    pub allow_all: bool,
+}
+
+impl Into<PermissionsOptions> for &PermissionConfig {
+    fn into(self) -> PermissionsOptions {
+        let mut options = PermissionsOptions::default();
+        macro_rules! set_perm {
+            ($allow_f:expr, $allow_t:expr) => {
+                if let Some(allow_read) = $allow_f {
+                    match allow_read {
+                        PermissionAllow::AllowAll => {
+                            $allow_t = None;
+                        }
+                        PermissionAllow::Allow(allow) => {
+                            $allow_t = Some(allow.clone());
+                        }
+                    }
+                }
+            };
+        }
+        set_perm!(&self.allow_read, options.allow_read);
+        set_perm!(&self.allow_write, options.allow_write);
+        options.prompt = true;
+        options.allow_all = self.allow_all;
+        options
+    }
 }
 
 impl Default for PermissionConfig {
@@ -507,7 +533,7 @@ impl Default for PermissionConfig {
         PermissionConfig {
             allow_read: None,
             allow_write: None,
-            allow_all: None,
+            allow_all: false,
         }
     }
 }
@@ -531,7 +557,6 @@ pub struct BlocklessConfig {
     pub unknown_imports_trap: bool,
     pub store_limited: StoreLimited,
     pub envs: Vec<(String, String)>,
-    pub tcp_listens: Vec<(SocketAddr, Option<u32>)>,
     pub permisions: Vec<Permission>,
     pub dirs: Vec<(String, String)>,
     pub fs_root_path: Option<String>,
@@ -544,8 +569,9 @@ pub struct BlocklessConfig {
     pub runtime_logger_level: LoggerLevel,
     pub cli_exit_with_code: bool,
     pub network_error_code: bool,
+    pub tcp_listens: Vec<(SocketAddr, Option<u32>)>,
     pub group_permisions: HashMap<String, Vec<Permission>>,
-    pub permissions: PermissionConfig,
+    pub permissions_config: PermissionConfig,
 }
 
 impl BlocklessConfig {
@@ -584,7 +610,7 @@ impl BlocklessConfig {
             opts: Default::default(),
             runtime_logger_level: LoggerLevel::WARN,
             version: BlocklessConfigVersion::Version0,
-            permissions: Default::default(),
+            permissions_config: Default::default(),
         }
     }
 

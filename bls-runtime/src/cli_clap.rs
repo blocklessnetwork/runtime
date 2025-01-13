@@ -1,7 +1,7 @@
 #![allow(unused)]
 use anyhow::{bail, Result};
 use blockless::{
-    BlocklessConfig, BlocklessModule, BlsNnGraph, BlsOptions, ModuleType, OptimizeOpts, OptionParser, Permission, PermissionAllow, Stderr, Stdin, Stdout
+    BlocklessConfig, BlocklessModule, BlsNnGraph, BlsOptions, ModuleType, OptimizeOpts, OptionParser, Permission, PermissionAllow, PermissionConfig, Stderr, Stdin, Stdout
 };
 use clap::{
     builder::{TypedValueParser, ValueParser},
@@ -227,7 +227,17 @@ pub struct PermissionFlags {
     allow_write: Option<PermissionAllow>,
 
     #[clap(long = "allow-all", help = "Allow all permissions.")]
-    allow_all: Option<bool>,
+    allow_all: bool,
+}
+
+impl Into<PermissionConfig> for PermissionFlags {
+    fn into(self) -> PermissionConfig {
+        PermissionConfig {
+            allow_read: self.allow_read,
+            allow_write: self.allow_write,
+            allow_all: self.allow_all,
+        }
+    }
 }
 
 #[derive(Parser, Debug)]
@@ -369,9 +379,7 @@ impl CliCommandOpts {
         conf.0.set_map_dirs(self.dirs);
         conf.0.set_feature_thread(self.feature_thread);
         conf.0.limited_memory(self.max_memory_size);
-        conf.0.permissions.allow_read = self.permission_flags.allow_read;
-        conf.0.permissions.allow_write = self.permission_flags.allow_write;
-        conf.0.permissions.allow_all = self.permission_flags.allow_all;
+        conf.0.permissions_config = self.permission_flags.into();
 
         // Handle IO settings
         if let Some(stderr) = self.stdio.stderr {
