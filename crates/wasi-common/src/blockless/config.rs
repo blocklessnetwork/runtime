@@ -497,13 +497,13 @@ impl Default for PermissionAllow {
 }
 
 #[derive(Clone, Debug)]
-pub struct PermissionConfig {
+pub struct PermissionsConfig {
     pub allow_read: Option<PermissionAllow>,
     pub allow_write: Option<PermissionAllow>,
     pub allow_all: bool,
 }
 
-impl Into<PermissionsOptions> for &PermissionConfig {
+impl Into<PermissionsOptions> for &PermissionsConfig {
     fn into(self) -> PermissionsOptions {
         let mut options = PermissionsOptions::default();
         macro_rules! set_perm {
@@ -528,9 +528,9 @@ impl Into<PermissionsOptions> for &PermissionConfig {
     }
 }
 
-impl Default for PermissionConfig {
+impl Default for PermissionsConfig {
     fn default() -> Self {
-        PermissionConfig {
+        PermissionsConfig {
             allow_read: None,
             allow_write: None,
             allow_all: false,
@@ -571,7 +571,7 @@ pub struct BlocklessConfig {
     pub network_error_code: bool,
     pub tcp_listens: Vec<(SocketAddr, Option<u32>)>,
     pub group_permisions: HashMap<String, Vec<Permission>>,
-    pub permissions_config: PermissionConfig,
+    pub permissions_config: PermissionsConfig,
 }
 
 impl BlocklessConfig {

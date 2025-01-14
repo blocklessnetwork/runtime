@@ -1,7 +1,8 @@
 #![allow(unused)]
 use anyhow::{bail, Result};
 use blockless::{
-    BlocklessConfig, BlocklessModule, BlsNnGraph, BlsOptions, ModuleType, OptimizeOpts, OptionParser, Permission, PermissionAllow, PermissionConfig, Stderr, Stdin, Stdout
+    BlocklessConfig, BlocklessModule, BlsNnGraph, BlsOptions, ModuleType, OptimizeOpts, 
+    OptionParser, Permission, PermissionAllow, PermissionsConfig, Stderr, Stdin, Stdout
 };
 use clap::{
     builder::{TypedValueParser, ValueParser},
@@ -230,9 +231,9 @@ pub struct PermissionFlags {
     allow_all: bool,
 }
 
-impl Into<PermissionConfig> for PermissionFlags {
-    fn into(self) -> PermissionConfig {
-        PermissionConfig {
+impl Into<PermissionsConfig> for PermissionFlags {
+    fn into(self) -> PermissionsConfig {
+        PermissionsConfig {
             allow_read: self.allow_read,
             allow_write: self.allow_write,
             allow_all: self.allow_all,

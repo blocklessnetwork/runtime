@@ -12,12 +12,12 @@ use bls_permissions::PermissionDescriptorParser;
 use bls_permissions::PermissionState;
 use bls_permissions::Permissions;
 use bls_permissions::Permissions as BlsPermissions;
-use bls_permissions::PermissionsOptions;
 use bls_permissions::RunQueryDescriptor;
 use bls_permissions::Url;
 
 use super::init_tty_prompter;
 use super::EnvCurrentDir;
+use super::PermissionsConfig;
 use super::RuntimePermissionDescriptorParser;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -60,8 +60,13 @@ impl BlsRuntimePermissionsContainer {
         )
     }
 
-    pub fn set_permissions_options(&self, permission_options: PermissionsOptions) -> Result<(), AnyError> {
-        let permissions = Permissions::from_options(&*self.inner.descriptor_parser, &permission_options)?;
+    pub fn set_permissions_config(&self, config: &PermissionsConfig) -> Result<(), AnyError> {
+        let permissions: Permissions = if config.allow_all {
+            Permissions::allow_all()
+        } else {
+            let options = config.into();
+            Permissions::from_options(&*self.inner.descriptor_parser, &options)?
+        };
         *self.inner.lock() = permissions;
         Ok(())
     }
