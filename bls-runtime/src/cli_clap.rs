@@ -221,10 +221,10 @@ pub enum RuntimeType {
 
 #[derive(Parser, Debug)]
 pub struct PermissionFlags {
-    #[clap(long = "read-allow", num_args=(0..), short = 'R', value_name = "[FILE[,]]", help = ALLOW_READ_HELP, value_parser = parser_allow)]
+    #[clap(long = "allow-read", num_args=(0..), short = 'R', value_name = "[FILE[,]]", help = ALLOW_READ_HELP, value_parser = parser_allow)]
     allow_read: Option<PermissionAllow>,
 
-    #[clap(long = "write-allow", num_args=(0..) , value_name = "[FILE[,]]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
+    #[clap(long = "allow-write", num_args=(0..) , value_name = "[FILE[,]]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
     allow_write: Option<PermissionAllow>,
 
     #[clap(long = "allow-all", help = "Allow all permissions.")]
