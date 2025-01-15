@@ -17,6 +17,7 @@ use bls_permissions::Url;
 
 use super::init_tty_prompter;
 use super::EnvCurrentDir;
+use super::PermissionAllow;
 use super::PermissionsConfig;
 use super::RuntimePermissionDescriptorParser;
 
@@ -60,13 +61,21 @@ impl BlsRuntimePermissionsContainer {
         )
     }
 
+    /// use the permissions config to set the container permissions
     pub fn set_permissions_config(&self, config: &PermissionsConfig) -> Result<(), AnyError> {
-        let permissions: Permissions = if config.allow_all {
+        // if --allow-alll is passed, we allow all permissions
+        let mut permissions: Permissions = if config.allow_all {
             Permissions::allow_all()
         } else {
             let options = config.into();
             Permissions::from_options(&*self.inner.descriptor_parser, &options)?
         };
+        if let Some(PermissionAllow::AllowAll) = config.allow_read {
+            permissions.read.granted_global = true;
+        }
+        if let Some(PermissionAllow::AllowAll) = config.allow_write {
+            permissions.write.granted_global = true;
+        }
         *self.inner.lock() = permissions;
         Ok(())
     }

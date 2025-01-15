@@ -281,13 +281,8 @@ impl OptionParser<String> for wasmtime::RegallocAlgorithm {
 
 impl OptionParser<&str> for PermissionAllow {
     fn parse(val: &&str) -> anyhow::Result<Self> {
-        match *val {
-            "" => Ok(PermissionAllow::AllowAll),
-            val@_ => {
-                let val = val.split(',').map(String::from).collect::<Vec<_>>();
-                Ok(PermissionAllow::Allow(val))
-            },
-        }
+        let val = val.split(',').map(String::from).collect::<Vec<_>>();
+        Ok(PermissionAllow::Allow(val))
     }
 }
 

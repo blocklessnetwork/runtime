@@ -88,7 +88,11 @@ Each use of the flag will preload a ML model from the host directory using the g
 
 const ALLOW_READ_HELP: &str = "Allow the app to read permissions.";
 
+const ALLOW_READ_ALL_HELP: &str = "Allow the app to all read permissions.";
+
 const ALLOW_WRITE_HELP: &str = "Allow the app to write permissions.";
+
+const ALLOW_WRITE_ALL_HELP: &str = "Allow the app to all write permissions.";
 
 fn parse_envs(envs: &str) -> Result<(String, String)> {
     let parts: Vec<_> = envs.splitn(2, "=").collect();
@@ -221,11 +225,17 @@ pub enum RuntimeType {
 
 #[derive(Parser, Debug)]
 pub struct PermissionFlags {
-    #[clap(long = "allow-read", num_args=(0..), short = 'R', value_name = "[FILE[,]]", help = ALLOW_READ_HELP, value_parser = parser_allow)]
+    #[clap(long = "allow-read", num_args=(0..), value_name = "[FILE[,]]", help = ALLOW_READ_HELP, value_parser = parser_allow)]
     allow_read: Option<PermissionAllow>,
 
+    #[clap(short = 'R', help = ALLOW_READ_ALL_HELP)]
+    allow_read_all: bool,
+    
     #[clap(long = "allow-write", num_args=(0..) , value_name = "[FILE[,]]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
     allow_write: Option<PermissionAllow>,
+
+    #[clap(short = 'W', help = ALLOW_WRITE_ALL_HELP)]
+    allow_write_all: bool,
 
     #[clap(long = "allow-all", help = "Allow all permissions.")]
     allow_all: bool,
@@ -233,11 +243,18 @@ pub struct PermissionFlags {
 
 impl Into<PermissionsConfig> for PermissionFlags {
     fn into(self) -> PermissionsConfig {
-        PermissionsConfig {
+        let mut permissions = PermissionsConfig {
             allow_read: self.allow_read,
             allow_write: self.allow_write,
             allow_all: self.allow_all,
+        };
+        if self.allow_read_all {
+            permissions.allow_read = Some(PermissionAllow::AllowAll);
         }
+        if self.allow_write_all {
+            permissions.allow_write = Some(PermissionAllow::AllowAll);
+        }
+        permissions
     }
 }
 
