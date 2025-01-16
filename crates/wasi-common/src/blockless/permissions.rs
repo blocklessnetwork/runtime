@@ -73,9 +73,6 @@ impl BlsRuntimePermissionsContainer {
         if let Some(PermissionAllow::AllowAll) = config.allow_read {
             permissions.read.granted_global = true;
         }
-        if let Some(PermissionAllow::AllowAll) = config.allow_write {
-            permissions.write.granted_global = true;
-        }
         *self.inner.lock() = permissions;
         Ok(())
     }

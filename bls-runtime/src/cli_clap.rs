@@ -225,20 +225,14 @@ pub enum RuntimeType {
 
 #[derive(Parser, Debug)]
 pub struct PermissionFlags {
-    #[clap(long = "allow-read", num_args=(0..), value_name = "[FILE[,]]", help = ALLOW_READ_HELP, value_parser = parser_allow)]
-    allow_read: Option<PermissionAllow>,
+    #[clap(long = "allow-read", num_args=(0..), hide=true, action=clap::ArgAction::Append, value_name = "[FILE[,]]", help = ALLOW_READ_HELP, value_parser = parser_allow)]
+    pub allow_read: Option<PermissionAllow>,
 
-    #[clap(short = 'R', help = ALLOW_READ_ALL_HELP)]
-    allow_read_all: bool,
-    
     #[clap(long = "allow-write", num_args=(0..) , value_name = "[FILE[,]]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
-    allow_write: Option<PermissionAllow>,
-
-    #[clap(short = 'W', help = ALLOW_WRITE_ALL_HELP)]
-    allow_write_all: bool,
+    pub allow_write: Option<PermissionAllow>,
 
     #[clap(long = "allow-all", help = "Allow all permissions.")]
-    allow_all: bool,
+    pub allow_all: bool,
 }
 
 impl Into<PermissionsConfig> for PermissionFlags {
@@ -248,12 +242,6 @@ impl Into<PermissionsConfig> for PermissionFlags {
             allow_write: self.allow_write,
             allow_all: self.allow_all,
         };
-        if self.allow_read_all {
-            permissions.allow_read = Some(PermissionAllow::AllowAll);
-        }
-        if self.allow_write_all {
-            permissions.allow_write = Some(PermissionAllow::AllowAll);
-        }
         permissions
     }
 }

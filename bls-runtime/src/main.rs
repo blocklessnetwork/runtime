@@ -7,6 +7,8 @@ mod plog;
 mod v86;
 mod v86config;
 use blockless::{blockless_run, LoggerLevel, Stdin};
+use clap::{CommandFactory, FromArgMatches};
+#[allow(unused_imports)]
 use clap::Parser;
 use cli_clap::{CliCommandOpts, RuntimeType};
 use config::load_cli_config_extract_from_car;
@@ -17,6 +19,7 @@ use error::CliExitCode;
 use log::{error, info, LevelFilter};
 use std::fs;
 use std::path::Path;
+use std::process::exit;
 use std::{io::Read, path::PathBuf, time::Duration};
 use v86::V86Lib;
 use v86config::load_v86conf_extract_from_car;
@@ -212,9 +215,27 @@ async fn non_blocking_read<R: Read + Send + 'static>(mut reader: R) -> Option<St
     rx.recv_timeout(std::time::Duration::from_millis(1000)).ok()
 }
 
+fn parse_args() -> CliCommandOpts {
+    let mut cli_command = CliCommandOpts::command();
+    let clap_match = cli_command.get_matches_mut();
+    let cli_command_opts = CliCommandOpts::from_arg_matches(&clap_match);
+    if let Ok(mut o) = cli_command_opts {
+        if o.permission_flags.allow_read.is_none() && clap_match.contains_id("allow_read") {
+            o.permission_flags.allow_read = Some(blockless::PermissionAllow::AllowAll);
+        }
+        if o.permission_flags.allow_write.is_none() && clap_match.contains_id("allow_write") {
+            o.permission_flags.allow_write = Some(blockless::PermissionAllow::AllowAll);
+        }
+        o
+    } else {
+        exit(255);
+    }
+    
+}
+
 #[tokio::main]
 async fn main() -> CliExitCode {
-    let cli_command_opts = CliCommandOpts::parse();
+    let cli_command_opts = parse_args();
     set_root_path_env_var(&cli_command_opts);
     let path = cli_command_opts.input_ref();
 
