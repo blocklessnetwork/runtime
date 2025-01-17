@@ -225,13 +225,13 @@ pub enum RuntimeType {
 
 #[derive(Parser, Debug)]
 pub struct PermissionFlags {
-    #[clap(long = "allow-read", num_args=(0..), hide=true, action=clap::ArgAction::Append, value_name = "[FILE[,]]", help = ALLOW_READ_HELP, value_parser = parser_allow)]
+    #[clap(long = "allow-read", id="allow-read", num_args=(0..), action=clap::ArgAction::Append, value_name = "[PATH[,]]", help = ALLOW_READ_HELP, value_parser = parser_allow)]
     pub allow_read: Option<PermissionAllow>,
 
-    #[clap(long = "allow-write", num_args=(0..) , value_name = "[FILE[,]]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
+    #[clap(long = "allow-write", id="allow-write", num_args=(0..) , value_name = "[PATH[,]]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
     pub allow_write: Option<PermissionAllow>,
 
-    #[clap(long = "allow-all", help = "Allow all permissions.")]
+    #[clap(long = "allow-all", id="allow-all", help = "Allow all permissions.")]
     pub allow_all: bool,
 }
 
@@ -261,8 +261,46 @@ pub struct StdioFlags {
 /// The latest version from Cargo.toml
 pub(crate) const SHORT_VERSION: &str = concat!("v", env!("CARGO_PKG_VERSION"));
 
+pub fn get_styles() -> clap::builder::Styles {
+    clap::builder::Styles::styled()
+        .usage(
+            anstyle::Style::new()
+                .bold()
+                .underline()
+                .fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Yellow))),
+        )
+        .header(
+            anstyle::Style::new()
+                .bold()
+                .underline()
+                .fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Yellow))),
+        )
+        .literal(
+            anstyle::Style::new().fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Green))),
+        )
+        .invalid(
+            anstyle::Style::new()
+                .bold()
+                .fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Red))),
+        )
+        .error(
+            anstyle::Style::new()
+                .bold()
+                .fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Red))),
+        )
+        .valid(
+            anstyle::Style::new()
+                .bold()
+                .underline()
+                .fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Green))),
+        )
+        .placeholder(
+            anstyle::Style::new().fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::White))),
+        )
+}
+
 #[derive(Parser, Debug)]
-#[command(author, version = SHORT_VERSION, long_version = SHORT_VERSION, about = "Blockless WebAssembly Runtime", long_about = None)]
+#[command(author, version = SHORT_VERSION, styles=get_styles(), arg_required_else_help = true, long_version = SHORT_VERSION, about = "Blockless WebAssembly Runtime")]
 pub(crate) struct CliCommandOpts {
     #[clap(long = "v86", value_name = "V86", required = false, help = V86_HELP )]
     pub v86: bool,
@@ -348,11 +386,10 @@ pub(crate) struct CliCommandOpts {
     #[clap(long = "nn-graph", value_name = "NN_GRAPH", value_parser = parse_nn_graph, help = NN_GRAPH_HELP)]
     pub nn_graph: Vec<BlsNnGraph>,
 
-    #[arg(long)]
-    pub help: bool,
 }
 
 impl CliCommandOpts {
+
     #[inline(always)]
     pub fn fs_root_path(&self) -> Option<&String> {
         self.fs_root_path.as_ref()

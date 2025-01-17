@@ -41,7 +41,7 @@ cap-tempfile = "3.4.1"
 cap-rand = { version = "3.4.1", features = ["small_rng"] }
 test-log = { version = "0.2", default-features = false, features = ["trace"] }
 tracing-subscriber = { version = "0.3.1", default-features = false, features = ['fmt', 'env-filter', 'ansi', 'tracing-log'] }
-clap = { version = "4.5.17", default-features = false, features = ["std", "derive"] }
+clap = { version = "4.5.26", default-features = false, features = ["std", "derive", "wrap_help", "env", "string", "wrap_help", "error-context"] }
 
 is-terminal = "0.4.10"
 bitflags = "2.0"

@@ -219,18 +219,20 @@ fn parse_args() -> CliCommandOpts {
     let mut cli_command = CliCommandOpts::command();
     let clap_match = cli_command.get_matches_mut();
     let cli_command_opts = CliCommandOpts::from_arg_matches(&clap_match);
-    if let Ok(mut o) = cli_command_opts {
-        if o.permission_flags.allow_read.is_none() && clap_match.contains_id("allow_read") {
-            o.permission_flags.allow_read = Some(blockless::PermissionAllow::AllowAll);
-        }
-        if o.permission_flags.allow_write.is_none() && clap_match.contains_id("allow_write") {
-            o.permission_flags.allow_write = Some(blockless::PermissionAllow::AllowAll);
-        }
-        o
-    } else {
-        exit(255);
+    match cli_command_opts {
+        Ok(mut o) => {
+            if o.permission_flags.allow_read.is_none() && clap_match.get_flag("allow-read") {
+                o.permission_flags.allow_read = Some(blockless::PermissionAllow::AllowAll);
+            }
+            if o.permission_flags.allow_write.is_none() && clap_match.contains_id("allow-write") {
+                o.permission_flags.allow_write = Some(blockless::PermissionAllow::AllowAll);
+            }
+            o
+        },
+        Err(_) => {
+            exit(255);
+        },
     }
-    
 }
 
 #[tokio::main]
