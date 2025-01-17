@@ -1,19 +1,19 @@
 #![allow(unused)]
 use anyhow::{bail, Result};
 use blockless::{
-    BlocklessConfig, BlocklessModule, BlsNnGraph, BlsOptions, ModuleType, OptimizeOpts, 
-    OptionParser, Permission, PermissionAllow, PermissionsConfig, Stderr, Stdin, Stdout
+    BlocklessConfig, BlocklessModule, BlsNnGraph, BlsOptions, ModuleType, OptimizeOpts,
+    OptionParser, Permission, PermissionAllow, PermissionsConfig, Stderr, Stdin, Stdout,
 };
 use clap::{
     builder::{TypedValueParser, ValueParser},
     Arg, ArgMatches, Command, Parser,
 };
 use std::{
-    collections::HashMap, 
-    net::{
-        IpAddr, SocketAddr, TcpListener, ToSocketAddrs
-    }, 
-    option, path::{Path, PathBuf}, str::FromStr
+    collections::HashMap,
+    net::{IpAddr, SocketAddr, TcpListener, ToSocketAddrs},
+    option,
+    path::{Path, PathBuf},
+    str::FromStr,
 };
 use url::Url;
 
@@ -231,7 +231,7 @@ pub struct PermissionFlags {
     #[clap(long = "allow-write", id="allow-write", num_args=(0..) , value_name = "[PATH[,]]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
     pub allow_write: Option<PermissionAllow>,
 
-    #[clap(long = "allow-all", id="allow-all", help = "Allow all permissions.")]
+    #[clap(long = "allow-all", id = "allow-all", help = "Allow all permissions.")]
     pub allow_all: bool,
 }
 
@@ -385,11 +385,9 @@ pub(crate) struct CliCommandOpts {
 
     #[clap(long = "nn-graph", value_name = "NN_GRAPH", value_parser = parse_nn_graph, help = NN_GRAPH_HELP)]
     pub nn_graph: Vec<BlsNnGraph>,
-
 }
 
 impl CliCommandOpts {
-
     #[inline(always)]
     pub fn fs_root_path(&self) -> Option<&String> {
         self.fs_root_path.as_ref()

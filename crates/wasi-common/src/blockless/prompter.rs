@@ -1,6 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 use super::colors;
+use anyhow::bail;
+use anyhow::Error as AnyError;
 use std::fmt::Write;
 use std::io::BufRead;
 use std::io::IsTerminal;
@@ -10,12 +12,10 @@ use std::io::Write as IoWrite;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::sync::Once;
-use anyhow::bail;
-use anyhow::Error as AnyError;
 
-use bls_permissions::is_standalone;
 use bls_permissions::bls_set_prompt_callbacks;
 use bls_permissions::bls_set_prompter;
+use bls_permissions::is_standalone;
 pub use bls_permissions::PermissionPrompter;
 pub use bls_permissions::PromptCallback;
 pub use bls_permissions::PromptResponse;
@@ -235,11 +235,10 @@ impl PermissionPrompter for TtyPrompter {
         api_name: Option<&str>,
         is_unary: bool,
     ) -> PromptResponse {
-        
         if !std::io::stdin().is_terminal() || !std::io::stderr().is_terminal() {
             return PromptResponse::Deny;
         };
-        
+
         #[allow(clippy::print_stderr)]
         if message.len() > MAX_PERMISSION_PROMPT_LENGTH {
             eprintln!("❌ Permission prompt length ({} bytes) was larger than the configured maximum length ({} bytes): denying request.", message.len(), MAX_PERMISSION_PROMPT_LENGTH);
@@ -255,13 +254,13 @@ impl PermissionPrompter for TtyPrompter {
 
         #[cfg(unix)]
         let metadata_before = get_stdin_metadata().unwrap();
-        
+
         // Lock stdio streams, so no other output is written while the prompt is
         // displayed.
         let stdout_lock = std::io::stdout().lock();
         let mut stderr_lock = std::io::stderr().lock();
         let mut stdin_lock = std::io::stdin().lock();
-        
+
         // For security reasons we must consume everything in stdin so that previously
         // buffered data cannot affect the prompt.
         #[allow(clippy::print_stderr)]
@@ -280,7 +279,7 @@ impl PermissionPrompter for TtyPrompter {
         } else {
             "[y/n] (y = yes, allow; n = no, deny)".to_string()
         };
-        
+
         // output everything in one shot to make the tests more reliable
         {
             let mut output = String::new();
@@ -298,7 +297,10 @@ impl PermissionPrompter for TtyPrompter {
             }
             let msg = format!(
                 "Learn more at: {}",
-                colors::cyan_with_underline(&format!("https://docs.bless.network/go/--allow-{}", name))
+                colors::cyan_with_underline(&format!(
+                    "https://docs.bless.network/go/--allow-{}",
+                    name
+                ))
             );
             writeln!(&mut output, "┠─ {}", colors::italic(&msg)).unwrap();
             let msg = if is_standalone() {
@@ -309,7 +311,7 @@ impl PermissionPrompter for TtyPrompter {
             writeln!(&mut output, "┠─ {}", colors::italic(&msg)).unwrap();
             write!(&mut output, "┗ {}", colors::bold("Allow?")).unwrap();
             write!(&mut output, " {opts} > ").unwrap();
-            
+
             stderr_lock.write_all(output.as_bytes()).unwrap();
             stderr_lock.flush().unwrap();
         }
@@ -393,8 +395,8 @@ impl PermissionPrompter for TtyPrompter {
 
 #[cfg(test)]
 pub mod tests {
-    use std::sync::Mutex;
     use once_cell::sync::Lazy;
+    use std::sync::Mutex;
 
     use super::*;
     use std::sync::atomic::AtomicBool;

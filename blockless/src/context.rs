@@ -43,9 +43,9 @@ impl BlocklessContext {
     }
 
     pub(crate) fn set_permisions(&mut self, config: &PermissionsConfig) {
-        self.preview1_ctx.as_mut().map(|ctx| 
-            ctx.set_permissions_config(config).unwrap()
-        );
+        self.preview1_ctx
+            .as_mut()
+            .map(|ctx| ctx.set_permissions_config(config).unwrap());
     }
 }
 

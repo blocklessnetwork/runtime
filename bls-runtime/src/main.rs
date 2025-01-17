@@ -7,9 +7,9 @@ mod plog;
 mod v86;
 mod v86config;
 use blockless::{blockless_run, LoggerLevel, Stdin};
-use clap::{CommandFactory, FromArgMatches};
 #[allow(unused_imports)]
 use clap::Parser;
+use clap::{CommandFactory, FromArgMatches};
 use cli_clap::{CliCommandOpts, RuntimeType};
 use config::load_cli_config_extract_from_car;
 #[allow(unused_imports)]
@@ -228,10 +228,10 @@ fn parse_args() -> CliCommandOpts {
                 o.permission_flags.allow_write = Some(blockless::PermissionAllow::AllowAll);
             }
             o
-        },
+        }
         Err(_) => {
             exit(255);
-        },
+        }
     }
 }
 

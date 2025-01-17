@@ -11,10 +11,10 @@ use crate::{
     I32Exit, SystemTimeSpec, WasiCtx,
 };
 use cap_std::time::{Duration, SystemClock};
-use std::{borrow::Cow, path::PathBuf, str::FromStr};
 use std::io::{IoSlice, IoSliceMut};
 use std::ops::Deref;
 use std::sync::Arc;
+use std::{borrow::Cow, path::PathBuf, str::FromStr};
 use wiggle::GuestMemory;
 use wiggle::GuestPtr;
 
@@ -730,15 +730,11 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         flags: types::Lookupflags,
         path: GuestPtr<str>,
     ) -> Result<types::Filestat, Error> {
-        let dir_entry = self
-            .table()
-            .get_dir(u32::from(dirfd))?;
+        let dir_entry = self.table().get_dir(u32::from(dirfd))?;
         let filen = memory.as_cow_str(path)?;
         if let Some(dir) = dir_entry.preopen_path() {
-            let full_path = dir.join(
-                PathBuf::from_str(&filen)
-                    .map_err(|_| Error::invalid_argument())?
-            );
+            let full_path =
+                dir.join(PathBuf::from_str(&filen).map_err(|_| Error::invalid_argument())?);
             self.perms_container
                 .check_read(&full_path.to_string_lossy(), "path_filestat_get")
                 .map_err(|_| Error::perm())?;
@@ -821,7 +817,6 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         _fs_rights_inheriting: types::Rights,
         fdflags: types::Fdflags,
     ) -> Result<types::Fd, Error> {
-        
         let table = self.table();
         let dirfd = u32::from(dirfd);
         if table.is::<FileEntry>(dirfd) {
@@ -836,16 +831,16 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
         let path = memory.as_cow_str(path)?;
 
         //permission check.
-        let full_path = dir_entry.preopen_path().as_ref().map(|dir| {
-            PathBuf::from(dir.join(path.as_ref()))
-        });
+        let full_path = dir_entry
+            .preopen_path()
+            .as_ref()
+            .map(|dir| PathBuf::from(dir.join(path.as_ref())));
         if let Some(ref full_path) = full_path {
             self.perms_container
                 .check_read(&full_path.to_string_lossy(), "path_open")
                 .map_err(|_| Error::perm())?;
         }
-        
-        
+
         let read = fs_rights_base.contains(types::Rights::FD_READ);
         let write = fs_rights_base.contains(types::Rights::FD_WRITE);
         let access_mode = if read {
@@ -868,7 +863,7 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiCtx {
                 let mut file_entry = FileEntry::new(file, access_mode);
                 file_entry.set_name(full_path.map(|p| p.to_string_lossy().to_string()));
                 table.push(Arc::new(file_entry))?
-            },
+            }
             OpenResult::Dir(child_dir) => table.push(Arc::new(DirEntry::new(None, child_dir)))?,
         };
         Ok(types::Fd::from(fd))

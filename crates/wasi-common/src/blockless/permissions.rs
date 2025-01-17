@@ -35,29 +35,26 @@ impl Permission {
 
 #[derive(Clone, Debug)]
 pub struct BlsRuntimePermissionsContainer {
-    pub inner: bls_permissions::BlsPermissionsContainer
+    pub inner: bls_permissions::BlsPermissionsContainer,
 }
 
 impl BlsRuntimePermissionsContainer {
-
     pub fn new(
-        descriptor_parser: Arc<dyn PermissionDescriptorParser>, 
-        perms: BlsPermissions
+        descriptor_parser: Arc<dyn PermissionDescriptorParser>,
+        perms: BlsPermissions,
     ) -> Self {
         init_tty_prompter();
         Self {
-            inner: BlsPermissionsContainer::new(descriptor_parser, perms)
+            inner: BlsPermissionsContainer::new(descriptor_parser, perms),
         }
     }
 
     pub fn new_with_env_cwd(cwd: Option<&str>) -> Self {
         Self::new(
-            Arc::new(RuntimePermissionDescriptorParser::new(
-                EnvCurrentDir {
-                    current_dir: cwd.map(String::from).or(Some("/".into())),
-                }
-            )),
-            BlsPermissions::none_with_prompt()
+            Arc::new(RuntimePermissionDescriptorParser::new(EnvCurrentDir {
+                current_dir: cwd.map(String::from).or(Some("/".into())),
+            })),
+            BlsPermissions::none_with_prompt(),
         )
     }
 
@@ -85,18 +82,13 @@ impl BlsRuntimePermissionsContainer {
         &self,
         child_permissions_arg: ChildPermissionsArg,
     ) -> Result<BlsRuntimePermissionsContainer, AnyError> {
-        Ok(BlsRuntimePermissionsContainer{
-            inner: self.inner.create_child_permissions(child_permissions_arg)?
+        Ok(BlsRuntimePermissionsContainer {
+            inner: self.inner.create_child_permissions(child_permissions_arg)?,
         })
     }
 
-    pub fn new_with_allow_all(
-        descriptor_parser: Arc<dyn PermissionDescriptorParser>
-    ) -> Self {
-        Self::new(
-            descriptor_parser, 
-            BlsPermissions::allow_all()
-        )
+    pub fn new_with_allow_all(descriptor_parser: Arc<dyn PermissionDescriptorParser>) -> Self {
+        Self::new(descriptor_parser, BlsPermissions::allow_all())
     }
 
     #[inline(always)]
@@ -109,11 +101,7 @@ impl BlsRuntimePermissionsContainer {
     }
 
     #[inline(always)]
-    pub fn check_read(
-        &self, 
-        path: &str, 
-        api_name: &str
-    ) -> Result<PathBuf, AnyError> {
+    pub fn check_read(&self, path: &str, api_name: &str) -> Result<PathBuf, AnyError> {
         self.inner.check_read(path, api_name)
     }
 
@@ -158,11 +146,7 @@ impl BlsRuntimePermissionsContainer {
     }
 
     #[inline(always)]
-    pub fn check_write(
-        &self, 
-        path: &str, 
-        api_name: &str
-    ) -> Result<PathBuf, AnyError> {
+    pub fn check_write(&self, path: &str, api_name: &str) -> Result<PathBuf, AnyError> {
         self.inner.check_write(path, api_name)
     }
 
@@ -185,10 +169,7 @@ impl BlsRuntimePermissionsContainer {
     }
 
     #[inline(always)]
-    pub fn check_write_all(
-        &self, 
-        api_name: &str
-    ) -> Result<(), AnyError> {
+    pub fn check_write_all(&self, api_name: &str) -> Result<(), AnyError> {
         self.inner.check_write_all(api_name)
     }
 
@@ -205,45 +186,27 @@ impl BlsRuntimePermissionsContainer {
     }
 
     #[inline(always)]
-    pub fn check_write_partial(
-        &mut self, 
-        path: &str, 
-        api_name: &str
-    ) -> Result<PathBuf, AnyError> {
+    pub fn check_write_partial(&mut self, path: &str, api_name: &str) -> Result<PathBuf, AnyError> {
         self.inner.check_write_partial(path, api_name)
     }
 
     #[inline(always)]
-    pub fn check_run(
-        &mut self, 
-        cmd: &RunQueryDescriptor, 
-        api_name: &str
-    ) -> Result<(), AnyError> {
+    pub fn check_run(&mut self, cmd: &RunQueryDescriptor, api_name: &str) -> Result<(), AnyError> {
         self.inner.check_run(cmd, api_name)
     }
 
     #[inline(always)]
-    pub fn check_run_all(
-        &mut self, 
-        api_name: &str
-    ) -> Result<(), AnyError> {
+    pub fn check_run_all(&mut self, api_name: &str) -> Result<(), AnyError> {
         self.inner.check_run_all(api_name)
     }
 
     #[inline(always)]
-    pub fn query_run_all(
-        &mut self, 
-        api_name: &str
-    ) -> bool {
+    pub fn query_run_all(&mut self, api_name: &str) -> bool {
         self.inner.query_run_all(api_name)
     }
 
     #[inline(always)]
-    pub fn check_sys(
-        &self, 
-        kind: &str, 
-        api_name: &str
-    ) -> Result<(), AnyError> {
+    pub fn check_sys(&self, kind: &str, api_name: &str) -> Result<(), AnyError> {
         self.inner.check_sys(kind, api_name)
     }
 
@@ -276,20 +239,12 @@ impl BlsRuntimePermissionsContainer {
 
     /// Checks special file access, returning the failed permission type if
     /// not successful.
-    pub fn check_special_file(
-        &mut self, 
-        path: &Path, 
-        api_name: &str
-    ) -> Result<(), &'static str> {
+    pub fn check_special_file(&mut self, path: &Path, api_name: &str) -> Result<(), &'static str> {
         self.inner.check_special_file(path, api_name)
     }
 
     #[inline(always)]
-    pub fn check_net_url(
-        &mut self, 
-        url: &Url, 
-        api_name: &str
-    ) -> Result<(), AnyError> {
+    pub fn check_net_url(&mut self, url: &Url, api_name: &str) -> Result<(), AnyError> {
         self.inner.check_net_url(url, api_name)
     }
 
@@ -313,10 +268,7 @@ impl BlsRuntimePermissionsContainer {
     }
 
     #[inline(always)]
-    pub fn check_ffi_partial_with_path(
-        &mut self, 
-        path: &str
-    ) -> Result<PathBuf, AnyError> {
+    pub fn check_ffi_partial_with_path(&mut self, path: &str) -> Result<PathBuf, AnyError> {
         self.inner.check_ffi_partial_with_path(path)
     }
 

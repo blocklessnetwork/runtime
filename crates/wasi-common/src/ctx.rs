@@ -81,7 +81,10 @@ impl WasiCtx {
         }
     }
 
-    pub fn set_permissions_config(&mut self, config: &PermissionsConfig) -> Result<(), anyhow::Error> {
+    pub fn set_permissions_config(
+        &mut self,
+        config: &PermissionsConfig,
+    ) -> Result<(), anyhow::Error> {
         self.perms_container.set_permissions_config(config)
     }
 

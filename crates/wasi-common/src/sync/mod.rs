@@ -47,7 +47,13 @@ impl WasiCtxBuilder {
     }
     pub fn new_with_cwd(c: &str) -> Self {
         WasiCtxBuilder {
-            ctx: WasiCtx::new(random_ctx(), clocks_ctx(), sched_ctx(), Table::new(), Some(c)),
+            ctx: WasiCtx::new(
+                random_ctx(),
+                clocks_ctx(),
+                sched_ctx(),
+                Table::new(),
+                Some(c),
+            ),
             built: false,
         }
     }

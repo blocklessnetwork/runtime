@@ -240,7 +240,11 @@ bitflags! {
 
 impl FileEntry {
     pub fn new(file: Box<dyn WasiFile>, access_mode: FileAccessMode) -> Self {
-        FileEntry { file, access_mode, name: None }
+        FileEntry {
+            file,
+            access_mode,
+            name: None,
+        }
     }
 
     pub fn set_name(&mut self, name: Option<String>) {
