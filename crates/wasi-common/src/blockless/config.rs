@@ -279,13 +279,13 @@ impl OptionParser<String> for wasmtime::RegallocAlgorithm {
     }
 }
 
-impl OptionParser<&str> for PermissionAllow {
+impl OptionParser<&str> for PermissionGrant {
     fn parse(val: &&str) -> anyhow::Result<Self> {
         match *val {
-            "" => Ok(PermissionAllow::AllowAll),
+            "" => Ok(PermissionGrant::All),
             val @ _ => {
                 let val = val.split(',').map(String::from).collect::<Vec<_>>();
-                Ok(PermissionAllow::Allow(val))
+                Ok(PermissionGrant::List(val))
             }
         }
     }
@@ -485,21 +485,23 @@ pub struct BlsNnGraph {
 }
 
 #[derive(Clone, Debug)]
-pub enum PermissionAllow {
-    AllowAll,
-    Allow(Vec<String>),
+pub enum PermissionGrant {
+    All,
+    List(Vec<String>),
 }
 
-impl Default for PermissionAllow {
+impl Default for PermissionGrant {
     fn default() -> Self {
-        PermissionAllow::AllowAll
+        PermissionGrant::All
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct PermissionsConfig {
-    pub allow_read: Option<PermissionAllow>,
-    pub allow_write: Option<PermissionAllow>,
+    pub allow_read: Option<PermissionGrant>,
+    pub allow_write: Option<PermissionGrant>,
+    pub deny_read: Option<PermissionGrant>,
+    pub deny_write: Option<PermissionGrant>,
     pub allow_all: bool,
 }
 
@@ -510,10 +512,10 @@ impl Into<PermissionsOptions> for &PermissionsConfig {
             ($allow_f:expr, $allow_t:expr) => {
                 if let Some(allow_read) = $allow_f {
                     match allow_read {
-                        PermissionAllow::AllowAll => {
+                        PermissionGrant::All => {
                             $allow_t = None;
                         }
-                        PermissionAllow::Allow(allow) => {
+                        PermissionGrant::List(allow) => {
                             $allow_t = Some(allow.clone());
                         }
                     }
@@ -522,6 +524,8 @@ impl Into<PermissionsOptions> for &PermissionsConfig {
         }
         set_perm!(&self.allow_read, options.allow_read);
         set_perm!(&self.allow_write, options.allow_write);
+        set_perm!(&self.deny_read, options.deny_read);
+        set_perm!(&self.deny_write, options.deny_write);
         options.prompt = true;
         options.allow_all = self.allow_all;
         options
@@ -533,6 +537,8 @@ impl Default for PermissionsConfig {
         PermissionsConfig {
             allow_read: None,
             allow_write: None,
+            deny_read: None,
+            deny_write: None,
             allow_all: false,
         }
     }

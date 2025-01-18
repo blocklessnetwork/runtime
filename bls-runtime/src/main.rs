@@ -219,14 +219,19 @@ fn parse_args() -> CliCommandOpts {
     let mut cli_command = CliCommandOpts::command();
     let clap_match = cli_command.get_matches_mut();
     let cli_command_opts = CliCommandOpts::from_arg_matches(&clap_match);
+    macro_rules!  set_perm_grant {
+        ($id: literal, $perm: expr) => {
+            if $perm.is_none() && clap_match.contains_id($id) {
+                $perm = Some(blockless::PermissionGrant::All);
+            }
+        };
+    }
     match cli_command_opts {
         Ok(mut o) => {
-            if o.permission_flags.allow_read.is_none() && clap_match.get_flag("allow-read") {
-                o.permission_flags.allow_read = Some(blockless::PermissionAllow::AllowAll);
-            }
-            if o.permission_flags.allow_write.is_none() && clap_match.contains_id("allow-write") {
-                o.permission_flags.allow_write = Some(blockless::PermissionAllow::AllowAll);
-            }
+            set_perm_grant!("allow-read", o.permission_flags.allow_read);
+            set_perm_grant!("allow-write", o.permission_flags.allow_write);
+            set_perm_grant!("deny-read", o.permission_flags.deny_read);
+            set_perm_grant!("deny-write", o.permission_flags.deny_write);
             o
         }
         Err(_) => {

@@ -2,7 +2,7 @@
 use anyhow::{bail, Result};
 use blockless::{
     BlocklessConfig, BlocklessModule, BlsNnGraph, BlsOptions, ModuleType, OptimizeOpts,
-    OptionParser, Permission, PermissionAllow, PermissionsConfig, Stderr, Stdin, Stdout,
+    OptionParser, Permission, PermissionGrant, PermissionsConfig, Stderr, Stdin, Stdout,
 };
 use clap::{
     builder::{TypedValueParser, ValueParser},
@@ -10,7 +10,9 @@ use clap::{
 };
 use std::{
     collections::HashMap,
-    net::{IpAddr, SocketAddr, TcpListener, ToSocketAddrs},
+    net::{
+        IpAddr, SocketAddr, TcpListener, ToSocketAddrs
+    },
     option,
     path::{Path, PathBuf},
     str::FromStr,
@@ -92,6 +94,10 @@ const ALLOW_READ_ALL_HELP: &str = "Allow the app to all read permissions.";
 
 const ALLOW_WRITE_HELP: &str = "Allow the app to write permissions.";
 
+const DENY_READ_HELP: &str = "Deny the app to read permissions.";
+
+const DENY_WRITE_HELP: &str = "Deny the app to write permissions.";
+
 const ALLOW_WRITE_ALL_HELP: &str = "Allow the app to all write permissions.";
 
 fn parse_envs(envs: &str) -> Result<(String, String)> {
@@ -157,8 +163,8 @@ fn parse_permission(permsion: &str) -> Result<Permission> {
     })
 }
 
-fn parser_allow(allow: &str) -> Result<PermissionAllow> {
-    PermissionAllow::parse(&allow)
+fn parser_allow(allow: &str) -> Result<PermissionGrant> {
+    PermissionGrant::parse(&allow)
 }
 
 fn parse_module(module: &str) -> Result<BlocklessModule> {
@@ -226,10 +232,16 @@ pub enum RuntimeType {
 #[derive(Parser, Debug)]
 pub struct PermissionFlags {
     #[clap(long = "allow-read", id="allow-read", num_args=(0..), action=clap::ArgAction::Append, value_name = "[PATH[,]]", help = ALLOW_READ_HELP, value_parser = parser_allow)]
-    pub allow_read: Option<PermissionAllow>,
+    pub allow_read: Option<PermissionGrant>,
 
-    #[clap(long = "allow-write", id="allow-write", num_args=(0..) , value_name = "[PATH[,]]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
-    pub allow_write: Option<PermissionAllow>,
+    #[clap(long = "allow-write", id="allow-write", num_args=(0..) , value_name = "PATH[,]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
+    pub allow_write: Option<PermissionGrant>,
+
+    #[clap(long = "deny-read", id="deny-read", num_args=(0..) , value_name = "PATH[,]", help = DENY_READ_HELP, value_parser = parser_allow)]
+    pub deny_read: Option<PermissionGrant>,
+
+    #[clap(long = "deny-write", id="deny-write", num_args=(0..) , value_name = "PATH[,]", help = DENY_WRITE_HELP, value_parser = parser_allow)]
+    pub deny_write: Option<PermissionGrant>,
 
     #[clap(long = "allow-all", id = "allow-all", help = "Allow all permissions.")]
     pub allow_all: bool,
@@ -239,7 +251,9 @@ impl Into<PermissionsConfig> for PermissionFlags {
     fn into(self) -> PermissionsConfig {
         let mut permissions = PermissionsConfig {
             allow_read: self.allow_read,
+            deny_read: self.deny_read,
             allow_write: self.allow_write,
+            deny_write: self.deny_write,
             allow_all: self.allow_all,
         };
         permissions

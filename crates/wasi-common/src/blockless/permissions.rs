@@ -17,7 +17,7 @@ use bls_permissions::Url;
 
 use super::init_tty_prompter;
 use super::EnvCurrentDir;
-use super::PermissionAllow;
+use super::PermissionGrant;
 use super::PermissionsConfig;
 use super::RuntimePermissionDescriptorParser;
 
@@ -67,8 +67,11 @@ impl BlsRuntimePermissionsContainer {
             let options = config.into();
             Permissions::from_options(&*self.inner.descriptor_parser, &options)?
         };
-        if let Some(PermissionAllow::AllowAll) = config.allow_read {
+        if let Some(PermissionGrant::All) = config.allow_read {
             permissions.read.granted_global = true;
+        }
+        if let Some(PermissionGrant::All) = config.allow_write {
+            permissions.write.granted_global = true;
         }
         *self.inner.lock() = permissions;
         Ok(())
