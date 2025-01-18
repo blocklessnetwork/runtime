@@ -66,7 +66,7 @@ const V86_HELP: &str =
     "V86 model flag when the v86 flag the car file must be v86 configure and image.";
 
 const THREAD_SUPPORT_HELP: &str =
-    "Thread support flag. when enabled, the runtime will support multi-threading.";
+    "Enables multi-threading in the runtime. When set, the runtime can spawn threads, allowing concurrent task execution for improved performance and scalability.";
 
 const TCP_LISTEN_HELP: &str = "Grant access to the given TCP listen socket. ";
 
@@ -123,7 +123,7 @@ fn parse_opts(opt: &str) -> Result<OptimizeOpts> {
                 max = max.max(d.opt_name.len() + d.opt_docs.len());
             }
             for d in options {
-                print!("{}", d.opt_name);
+                print!("   -O     {}", d.opt_name);
                 print!(" --");
                 for line in d.opt_docs.lines().map(|s| s.trim()) {
                     if line.is_empty() {
