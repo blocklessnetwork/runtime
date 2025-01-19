@@ -67,6 +67,13 @@ impl BlsRuntimePermissionsContainer {
             let options = config.into();
             Permissions::from_options(&*self.inner.descriptor_parser, &options)?
         };
+
+        if let Some(PermissionGrant::All) = config.deny_read {
+            permissions.read.flag_denied_global = true;
+        }
+        if let Some(PermissionGrant::All) = config.deny_write {
+            permissions.write.flag_denied_global = true;
+        }
         if let Some(PermissionGrant::All) = config.allow_read {
             permissions.read.granted_global = true;
         }
