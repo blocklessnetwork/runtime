@@ -10,9 +10,7 @@ use clap::{
 };
 use std::{
     collections::HashMap,
-    net::{
-        IpAddr, SocketAddr, TcpListener, ToSocketAddrs
-    },
+    net::{IpAddr, SocketAddr, TcpListener, ToSocketAddrs},
     option,
     path::{Path, PathBuf},
     str::FromStr,
