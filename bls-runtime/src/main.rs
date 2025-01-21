@@ -232,6 +232,8 @@ fn parse_args() -> CliCommandOpts {
             set_perm_grant!("allow-write", o.permission_flags.allow_write);
             set_perm_grant!("deny-read", o.permission_flags.deny_read);
             set_perm_grant!("deny-write", o.permission_flags.deny_write);
+            set_perm_grant!("allow-net", o.permission_flags.allow_net);
+            set_perm_grant!("deny-net", o.permission_flags.deny_net);
             o
         }
         Err(_) => {

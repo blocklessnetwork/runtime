@@ -74,11 +74,17 @@ impl BlsRuntimePermissionsContainer {
         if let Some(PermissionGrant::All) = config.deny_write {
             permissions.write.flag_denied_global = true;
         }
+        if let Some(PermissionGrant::All) = config.deny_net {
+            permissions.net.flag_denied_global = true;
+        }
         if let Some(PermissionGrant::All) = config.allow_read {
             permissions.read.granted_global = true;
         }
         if let Some(PermissionGrant::All) = config.allow_write {
             permissions.write.granted_global = true;
+        }
+        if let Some(PermissionGrant::All) = config.allow_net {
+            permissions.net.granted_global = true;
         }
         *self.inner.lock() = permissions;
         Ok(())
@@ -254,7 +260,7 @@ impl BlsRuntimePermissionsContainer {
     }
 
     #[inline(always)]
-    pub fn check_net_url(&mut self, url: &Url, api_name: &str) -> Result<(), AnyError> {
+    pub fn check_net_url(&self, url: &Url, api_name: &str) -> Result<(), AnyError> {
         self.inner.check_net_url(url, api_name)
     }
 

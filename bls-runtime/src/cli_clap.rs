@@ -92,9 +92,13 @@ const ALLOW_READ_ALL_HELP: &str = "Allow the app to all read permissions.";
 
 const ALLOW_WRITE_HELP: &str = "Allow the app to write permissions.";
 
+const ALLOW_NET_HELP: &str = "Allow the app to net accessing permissions.";
+
 const DENY_READ_HELP: &str = "Deny the app to read permissions.";
 
 const DENY_WRITE_HELP: &str = "Deny the app to write permissions.";
+
+const DENY_NET_HELP: &str = "Deny the app to  net accessing permissions.";
 
 const ALLOW_WRITE_ALL_HELP: &str = "Allow the app to all write permissions.";
 
@@ -235,11 +239,17 @@ pub struct PermissionFlags {
     #[clap(long = "allow-write", id="allow-write", num_args=(0..) , value_name = "PATH[,]", help = ALLOW_WRITE_HELP, value_parser = parser_allow)]
     pub allow_write: Option<PermissionGrant>,
 
+    #[clap(long = "allow-net", id="allow-net", num_args=(0..) , value_name = "PATH[,]", help = ALLOW_NET_HELP, value_parser = parser_allow)]
+    pub allow_net: Option<PermissionGrant>,
+
     #[clap(long = "deny-read", id="deny-read", num_args=(0..) , value_name = "PATH[,]", help = DENY_READ_HELP, value_parser = parser_allow)]
     pub deny_read: Option<PermissionGrant>,
 
     #[clap(long = "deny-write", id="deny-write", num_args=(0..) , value_name = "PATH[,]", help = DENY_WRITE_HELP, value_parser = parser_allow)]
     pub deny_write: Option<PermissionGrant>,
+
+    #[clap(long = "deny-net", id="deny-net", num_args=(0..) , value_name = "URL[,]", help = DENY_NET_HELP, value_parser = parser_allow)]
+    pub deny_net: Option<PermissionGrant>,
 
     #[clap(long = "allow-all", id = "allow-all", help = "Allow all permissions.")]
     pub allow_all: bool,
@@ -252,6 +262,8 @@ impl Into<PermissionsConfig> for PermissionFlags {
             deny_read: self.deny_read,
             allow_write: self.allow_write,
             deny_write: self.deny_write,
+            deny_net: self.deny_net,
+            allow_net: self.allow_net,
             allow_all: self.allow_all,
         };
         permissions

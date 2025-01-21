@@ -502,6 +502,8 @@ pub struct PermissionsConfig {
     pub allow_write: Option<PermissionGrant>,
     pub deny_read: Option<PermissionGrant>,
     pub deny_write: Option<PermissionGrant>,
+    pub allow_net: Option<PermissionGrant>,
+    pub deny_net: Option<PermissionGrant>,
     pub allow_all: bool,
 }
 
@@ -526,6 +528,8 @@ impl Into<PermissionsOptions> for &PermissionsConfig {
         set_perm!(&self.allow_write, options.allow_write);
         set_perm!(&self.deny_read, options.deny_read);
         set_perm!(&self.deny_write, options.deny_write);
+        set_perm!(&self.allow_net, options.allow_net);
+        set_perm!(&self.deny_net, options.deny_net);
         options.prompt = true;
         options.allow_all = self.allow_all;
         options
@@ -537,8 +541,10 @@ impl Default for PermissionsConfig {
         PermissionsConfig {
             allow_read: None,
             allow_write: None,
+            allow_net: None,
             deny_read: None,
             deny_write: None,
+            deny_net: None,
             allow_all: false,
         }
     }

@@ -6,6 +6,7 @@ use crate::string_array::StringArray;
 use crate::table::Table;
 use crate::{BlocklessConfig, BlsRuntimePermissionsContainer, PermissionsConfig};
 use crate::{Error, StringArrayError};
+use bls_permissions::Url;
 use cap_rand::RngCore;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
@@ -72,6 +73,13 @@ impl WasiCtx {
         let lock = self.0.blockless_config.lock().unwrap();
         lock.as_ref()
             .and_then(|l| l.fix_stdin_ref().map(String::from))
+    }
+
+    pub fn check_url_permissions(&self, host: &Url, api_name: &str) -> bool {
+        match self.perms_container.check_net_url(host, api_name) {
+            Ok(_) => true,
+            Err(_) => false,
+        }
     }
 
     pub fn resource_permission(&self, resource: &str) -> bool {

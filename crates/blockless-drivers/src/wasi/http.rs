@@ -1,6 +1,9 @@
 #![allow(non_upper_case_globals)]
+use std::str::FromStr;
+
 use crate::{http_driver, HttpErrorKind};
 use log::error;
+use url::Url;
 use wasi_common::WasiCtx;
 use wiggle::{GuestMemory, GuestPtr};
 
@@ -107,7 +110,9 @@ impl blockless_http::BlocklessHttp for WasiCtx {
                 HttpErrorKind::Utf8Error
             })?
             .unwrap();
-        if !self.resource_permission(url) {
+
+        let url_ = Url::from_str(url).map_err(|_| HttpErrorKind::InvalidUrl)?;
+        if !self.check_url_permissions(&url_, "http_req") {
             error!("Permission Deny");
             return Err(HttpErrorKind::PermissionDeny);
         }

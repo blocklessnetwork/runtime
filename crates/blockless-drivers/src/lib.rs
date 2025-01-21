@@ -30,11 +30,7 @@ type OpenFuture = Pin<Box<dyn Future<Output = Result<Box<dyn WasiFile>, ErrorKin
 pub trait Driver {
     fn name(&self) -> &str;
 
-    fn open(
-        &self,
-        uri: &str,
-        opts: &str,
-    ) -> OpenFuture;
+    fn open(&self, uri: &str, opts: &str) -> OpenFuture;
 }
 
 lazy_static! {
